@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, circuitbreakers, retries
+  resilience4j:
+    circuitbreaker:
+      instances:
+        backend:
+          sliding-window-size: 5
+          failure-rate-threshold: 60 # ~5 fails
+          wait-duration-in-open-state: 30s
+          permitted-number-of-calls-in-half-open-state: 2
+    retry:
+      instances:
+        backend:
+          max-attempts: 3
+          wait-duration: 100ms
+          enable-exponential-backoff: true
+          exponential-backoff-multiplier: 2
+          retry-exceptions:
+            - org.springframework.web.client.RestClientException
+
+logging:
+  level:
+    io.github.resilience4j: DEBUG
